@@ -6,8 +6,8 @@ apply plugin: 'com.jfrog.bintray'
 def version = "1.0"
 def group = "com.peirr.http"
 
-def siteUrl = 'https://github.com/ckurtm/CastCompanion'
-def gitUrl = 'https://github.com/ckurtm/CastCompanion.git'
+def siteUrl = 'https://github.com/ckurtm/SimpleHttpService'
+def gitUrl = 'https://github.com/ckurtm/SimpleHttpService.git'
 
 android {
     compileSdkVersion 23
@@ -26,6 +26,81 @@ android {
         }
     }
 }
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.key")
+
+    configurations = ['archives']
+    pkg {
+        repo = "maven"
+        name = "SimpleHttpService"
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        licenses = ["Apache-2.0"]
+        publish = true
+    }
+}
+
+
+install {
+    repositories.mavenInstaller {
+        pom {
+            project {
+                packaging 'aar'
+                name 'SimpleHttpService-a simple http file service for Android'
+                url siteUrl
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'simple-http-service'
+                        name 'Kurt Mbanje'
+                        email 'ckurtm@gmail.com'
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+
+                }
+            }
+        }
+    }
+}
+
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+task findConventions << {
+    println project.getConvention()
+}
+
 
 dependencies {
     compile 'com.squareup:javapoet:1.2.0'
