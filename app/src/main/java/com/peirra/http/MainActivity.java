@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity implements ISimpleHttpServic
     String TAG = MainActivity.class.getSimpleName();
     SimpleHttpServiceClient http;
 
-    int PORT = 9975;
+    int PORT = SimpleHttpService.generatePort();
     TextView message;
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -1,6 +1,7 @@
 package com.peirr.http.service;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiInfo;
@@ -35,13 +36,16 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
     public static final int REQUEST_STOP = 14;
     public static final int REQUEST_INFO = 16;
 
+    private static final int PORT_MIN = 9950;
+    private static final int PORT_MAX = 9999;
+
     private String ip;
     private int port;
     private SimpleHttpServiceConnector connector;
     private SimpleHttpServer server;
     private String serverRoot = "";
     private Handler serverHandler = new ServerHandler(this);
-    private SecureRandom random = new SecureRandom();
+    private static SecureRandom random = new SecureRandom();
     private int currentState = STATE_STOPPED;
 
 
@@ -58,21 +62,23 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
     @Override
     public void onCreate() {
         super.onCreate();
-        port = randomPort(9960,9999);
+        port = generatePort();
     }
 
     @Override
     public void bootup(int port) {
-        Log.d(TAG,"bootup()");
+        Log.d(TAG, "bootup()");
+
         try{
             if(port != 0){
                 this.port = port;
             }
-            SimpleHttpInfo info = getInfo();
+            SimpleHttpInfo info = getInfo(this,ip,this.port);
+            ip = info.ip;
             server = new SimpleHttpServer(serverHandler, serverRoot,info.ip,info.port,getApplicationContext());
             server.start();
             currentState = STATE_RUNNING;
-            Log.d(TAG,"boot success...");
+            Log.d(TAG, "boot success...");
         } catch (Exception e) {
             currentState = STATE_ERROR;
             Log.d(TAG,"boot failure...");
@@ -88,7 +94,9 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
         if(server != null){
             server.stopServer();
         }
-        connector.send(STATE_STOPPED, getInfo());
+        SimpleHttpInfo info = getInfo(this,ip,port);
+        this.ip = info.ip;
+        connector.send(STATE_STOPPED, info);
         stopSelf();
     }
 
@@ -107,11 +115,13 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
             this.port = port;
         }
         Log.d(TAG,"info()");
-        connector.send(currentState, getInfo());
+        SimpleHttpInfo info = getInfo(this,ip,port);
+        this.ip = info.ip;
+        connector.send(currentState, info);
     }
 
-    public String getIp() {
-        WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+    public static String getIp(Context context) {
+        WifiManager wifiManager = (WifiManager) context.getSystemService(WIFI_SERVICE);
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
         if (wifiInfo.getSupplicantState() != SupplicantState.COMPLETED) {
             return null;
@@ -119,15 +129,18 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
         return intToIp(wifiInfo.getIpAddress());
     }
 
+    public static int generatePort(){
+        return randomPort(PORT_MIN,PORT_MAX);
+    }
 
-    private SimpleHttpInfo getInfo(){
+    public static SimpleHttpInfo getInfo(Context context,String ip,int port){
         if (TextUtils.isEmpty(ip)) {
-            ip = getIp();
+            ip = getIp(context);
         }
         return new SimpleHttpInfo(ip, port);
     }
 
-    private String intToIp(int i) {
+    private static String intToIp(int i) {
         return ((i) & 0xFF) + "." + ((i >> 8) & 0xFF) + "." + ((i >> 16) & 0xFF) + "." + (i >> 24 & 0xFF);
     }
 
@@ -145,7 +158,7 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
         }
     }
 
-    private int randomPort(int min, int max) {
+    private static int randomPort(int min, int max) {
         return random.nextInt((max - min) + 1) + min;
     }
 }
