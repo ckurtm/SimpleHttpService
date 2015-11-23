@@ -61,7 +61,7 @@ install {
                 }
                 developers {
                     developer {
-                        id 'simple-http-service'
+                        id 'http_service'
                         name 'Kurt Mbanje'
                         email 'ckurtm@gmail.com'
                     }
