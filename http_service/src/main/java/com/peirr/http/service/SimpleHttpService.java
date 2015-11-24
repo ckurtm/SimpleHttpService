@@ -47,7 +47,7 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
     private Handler serverHandler = new ServerHandler(this);
     private static SecureRandom random = new SecureRandom();
     private int currentState = STATE_STOPPED;
-
+    private String message = null;
 
     public SimpleHttpService() {
         this.connector = new SimpleHttpServiceConnector(this);
@@ -68,7 +68,6 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
     @Override
     public void bootup(int port) {
         Log.d(TAG, "bootup()");
-
         try{
             if(port != 0){
                 this.port = port;
@@ -81,10 +80,11 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
             Log.d(TAG, "boot success...");
         } catch (Exception e) {
             currentState = STATE_ERROR;
+            message = e.getMessage();
             Log.d(TAG,"boot failure...");
             Log.e(TAG, Log.getStackTraceString(e));
         }
-        connector.send(currentState,new SimpleHttpInfo(ip,port));
+        connector.send(currentState,new SimpleHttpInfo(ip,port,message));
     }
 
     @Override
@@ -137,7 +137,7 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
         if (TextUtils.isEmpty(ip)) {
             ip = getIp(context);
         }
-        return new SimpleHttpInfo(ip, port);
+        return new SimpleHttpInfo(ip, port,null);
     }
 
     private static String intToIp(int i) {
@@ -147,7 +147,6 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
 
     private static class ServerHandler extends Handler {
         final WeakReference<SimpleHttpService> reference;
-
         private ServerHandler(SimpleHttpService service) {
             this.reference = new WeakReference<>(service);
         }

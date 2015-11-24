@@ -10,12 +10,14 @@ public class SimpleHttpInfo implements Parcelable {
 
     public String ip;
     public int port;
+    public String message;
 
     public SimpleHttpInfo() {}
 
-    public SimpleHttpInfo(String ip, int port) {
+    public SimpleHttpInfo(String ip, int port,String message) {
         this.ip = ip;
         this.port = port;
+        this.message = message;
     }
 
     @Override
@@ -27,12 +29,16 @@ public class SimpleHttpInfo implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.ip);
         dest.writeInt(this.port);
+        dest.writeString(this.message);
     }
 
     protected SimpleHttpInfo(Parcel in) {
         this.ip = in.readString();
         this.port = in.readInt();
+        this.message = in.readString();
     }
+
+
 
     public static final Parcelable.Creator<SimpleHttpInfo> CREATOR = new Parcelable.Creator<SimpleHttpInfo>() {
         public SimpleHttpInfo createFromParcel(Parcel source) {

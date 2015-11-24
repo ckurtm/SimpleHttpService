@@ -1,7 +1,7 @@
 package com.peirra.http;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -10,31 +10,34 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.peirr.http.service.SimpleHttpInfo;
-import com.peirr.http.service.ISimpleHttpServiceServer;
 import com.peirr.http.service.SimpleHttpService;
-import com.peirr.http.service.SimpleHttpServiceClient;
+import com.peirra.http.mvp.HttpContract;
+import com.peirra.http.mvp.HttpPresenter;
+import com.peirra.http.mvp.HttpRepositories;
+import com.peirra.http.mvp.HttpRepository;
 
-public class MainActivity extends AppCompatActivity implements ISimpleHttpServiceServer {
+public class MainActivity extends AppCompatActivity implements HttpContract.View {
 
     String TAG = MainActivity.class.getSimpleName();
-    SimpleHttpServiceClient http;
-
-    int PORT = SimpleHttpService.generatePort();
     TextView message;
+    HttpPresenter presenter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         message = (TextView) findViewById(R.id.message);
 
+        HttpRepository repository = new HttpRepositories(this,SimpleHttpService.generatePort());
+        presenter = new HttpPresenter(repository,this);
+
         Switch plug = (Switch) findViewById(R.id.switch1);
         plug.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
-                    http.bootup(PORT);
-                }else{
-                    http.shutdown();
+                if (isChecked) {
+                    presenter.bootup();
+                } else {
+                    presenter.shutdown();
                 }
             }
         });
@@ -43,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements ISimpleHttpServic
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                http.info(PORT);
+                presenter.info();
             }
         });
 
@@ -52,31 +55,30 @@ public class MainActivity extends AppCompatActivity implements ISimpleHttpServic
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                http.shutdown();
+                presenter.shutdown();
             }
         });
 
 
-        http = SimpleHttpServiceClient.createStub(this,this);
     }
 
 
     @Override
     protected void onResume() {
         super.onResume();
-        http.connect();
+        presenter.connect();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        http.disconnect();
+        presenter.disconnect();
     }
 
     @Override
-    public void onHttpServerStateChanged(int state, SimpleHttpInfo info) {
-        Log.d(TAG,"onHttpServerStateChanged() [state:"+state+"] [info:"+info+"]");
-        switch (state){
+    public void showHttpStatus(int status, SimpleHttpInfo info) {
+        Log.d(TAG,"showHttpStatus() [state:"+status+"] [info:"+info+"]");
+        switch (status){
             case SimpleHttpService.STATE_RUNNING:
                 message.setText(info.ip + ":" + info.port);
                 break;
@@ -86,13 +88,6 @@ public class MainActivity extends AppCompatActivity implements ISimpleHttpServic
             case SimpleHttpService.STATE_ERROR:
                 message.setText("STATE_ERROR");
                 break;
-
         }
-
-    }
-
-    @Override
-    public void onBoundServiceConnectionChanged(boolean connected) {
-      message.setText("SERVICE_" + (connected ? "CONNECTED" : "DISCONNECTED"));
     }
 }
