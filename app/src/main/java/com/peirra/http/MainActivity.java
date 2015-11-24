@@ -11,10 +11,10 @@ import android.widget.TextView;
 
 import com.peirr.http.service.SimpleHttpInfo;
 import com.peirr.http.service.SimpleHttpService;
-import com.peirra.http.mvp.HttpContract;
-import com.peirra.http.mvp.HttpPresenter;
-import com.peirra.http.mvp.HttpRepositories;
-import com.peirra.http.mvp.HttpRepository;
+import com.peirr.http.mvp.HttpContract;
+import com.peirr.http.mvp.HttpPresenter;
+import com.peirr.http.mvp.HttpRepositories;
+import com.peirr.http.mvp.HttpRepository;
 
 public class MainActivity extends AppCompatActivity implements HttpContract.View {
 

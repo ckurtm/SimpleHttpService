@@ -1,4 +1,4 @@
-package com.peirra.http.mvp;
+package com.peirr.http.mvp;
 
 import com.peirr.http.service.SimpleHttpInfo;
 
