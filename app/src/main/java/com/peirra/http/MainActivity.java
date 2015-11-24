@@ -58,10 +58,7 @@ public class MainActivity extends AppCompatActivity implements HttpContract.View
                 presenter.shutdown();
             }
         });
-
-
     }
-
 
     @Override
     protected void onResume() {
