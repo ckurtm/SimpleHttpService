@@ -39,7 +39,7 @@ public class SimpleHttpServer extends Thread {
 
     @Override
     public void run() {
-        while (running) {
+        while (isRunning()) {
             try {
                 send("Waiting for connections");
                 Socket client = listener.accept();
@@ -50,14 +50,25 @@ public class SimpleHttpServer extends Thread {
                 clientList.add(client);
             } catch (IOException e) {
                 send(e.getMessage());
-                Log.e(TAG,"server boot error: " +  Log.getStackTraceString(e));
+                Log.w(TAG,"server shutdown ..: ");
             }
         }
     }
 
+    private synchronized void setRunning(boolean running) {
+        this.running = running;
+    }
+
+    public synchronized boolean isRunning() {
+        return running;
+    }
+
     public void stopServer() {
-        running = false;
+        setRunning(false);
         try {
+            for(Socket client:clientList){
+                client.close();
+            }
             releaseHttpThread();
             listener.close();
         } catch (IOException e) {
