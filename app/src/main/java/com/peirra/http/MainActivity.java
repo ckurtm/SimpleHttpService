@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements HttpContract.View
 
     @Override
     public void showHttpStatus(int status, SimpleHttpInfo info) {
-        Log.d(TAG,"showHttpStatus() [state:"+status+"] [info:"+info+"]");
+        Log.d(TAG,"showHttpStatus() [state:"+status+"] [http://"+info.ip +":"+info.port+"]");
         switch (status){
             case SimpleHttpService.STATE_RUNNING:
                 message.setText(info.ip + ":" + info.port);

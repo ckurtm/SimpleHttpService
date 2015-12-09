@@ -14,16 +14,17 @@ import android.webkit.MimeTypeMap;
 
 import com.peirr.http.utils.IO;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Map;
 
 class SimpleHttpServerHandler extends Thread {
     String TAG = SimpleHttpServerHandler.class.getSimpleName();
@@ -31,7 +32,7 @@ class SimpleHttpServerHandler extends Thread {
     private String documentRoot;
     private Context context;
     private String html = "<html><body bgcolor=\"#000\" text=\"#fff\">{CONTENT}<body><html>";
-    private final int BUFFER_SIZE = 1024;
+    private final int BUFFER_SIZE = 2048;
 
     public SimpleHttpServerHandler(String d, Context c, Socket s) {
         toClient = s;
@@ -42,34 +43,29 @@ class SimpleHttpServerHandler extends Thread {
     public void run() {
         String path = "";
         try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(toClient.getInputStream()));
-            // Receive data
-            while (true) {
-                String s = in.readLine().trim();
-                if (s.equals("")) {
-                    break;
-                }
-                if (s.substring(0, 3).equals("GET")) {
-                    int leerstelle = s.indexOf(" HTTP/");
-                    path = s.substring(5,leerstelle);
-                    path = path.replaceAll("[/]+","/");
-                }
+            SimpleHttpRequestParser parser2 =  new SimpleHttpRequestParser(toClient.getInputStream());
+            parser2.parseRequest();
+            Map<String,String> headers = parser2.getHeaders();
+//            Map<String,String> params = parser2.getParams();
+            path = parser2.getRequestURL();
+            Log.d(TAG,"M[ " + parser2.getMethod() +  "]");
+            for(String header:headers.keySet()) {
+                Log.d(TAG, "H[" + header + "] : " + headers.get(header));
             }
         } catch (Exception e) {
-            Log.e(TAG,"reading buffer: ", e);
+            Log.e(TAG, "error reading request: " + e.getMessage(),e);
             SimpleHttpServer.remove(toClient);
             try {
                 toClient.close();
-            }
-            catch (Exception ex){
-                Log.e(TAG,"error closing client: ", ex);
+            } catch (Exception ex) {
+                Log.e(TAG, "error closing client: ", ex);
             }
         }
-        get(path);
+        process(path);
     }
 
 
-    public void release(){
+    public void release() {
         if (toClient != null) {
             try {
                 toClient.close();
@@ -79,8 +75,8 @@ class SimpleHttpServerHandler extends Thread {
         }
     }
 
-    private void get(String path) {
-        Log.d(TAG, "GET [path:" + path + "]");
+    private void process(String path) {
+        Log.d(TAG, "process [path:" + path + "]");
         // Standard-Doc
         if (TextUtils.isEmpty(path)) {
             path = "index.html";
@@ -98,10 +94,10 @@ class SimpleHttpServerHandler extends Thread {
             Log.e(TAG, "failed to decode path", e);
         }
         path = documentRoot + path;
-        Log.d(TAG, "file: " + path);
-        path = path.replaceAll("[/]+","/");
+//        Log.d(TAG, "file: " + path);
+        path = path.replaceAll("[/]+", "/");
 
-        if(path.charAt(path.length()-1) == '/') {
+        if (path.charAt(path.length() - 1) == '/') {
             path = documentRoot + "404.html";
         }
 
@@ -115,15 +111,16 @@ class SimpleHttpServerHandler extends Thread {
                 header = header.replace("%code%", "404 File not found");
                 path = "404.html";
             }
+        } catch (Exception e) {
         }
-        catch (Exception e) {}
         if (!path.equals(documentRoot + "403.html")) {
             header = getHeaderBase(path).replace("%code%", "200 OK");
         }
-        Log.d(TAG, "Serving " + path);
+//        Log.d(TAG, "Serving " + path);
         try {
             File f = new File(path);
             if (f.exists()) { //TODO only allow access to files in the apps folders
+                Log.d(TAG, "FOUND [" + path + "]");
                 header = header.replace("%length%", "" + f.length());
                 FileInputStream fis = new FileInputStream(f);
                 OutputStream os = toClient.getOutputStream();
@@ -132,10 +129,11 @@ class SimpleHttpServerHandler extends Thread {
                 IO.copy(fis, os);
                 fis.close();
             } else {
+                Log.d(TAG, "NOT FOUND [" + path + "]");
                 // Send HTML-File (Ascii, not as a stream)
                 header = getHeaderBase(path);
                 header = header.replace("%code%", "404 File not found");
-                header = header.replace("%length%", ""+get404().length());
+                header = header.replace("%length%", "" + get404().length());
                 PrintWriter out = new PrintWriter(toClient.getOutputStream(), true);
                 out.print(header);
                 out.print(get404());
@@ -149,33 +147,66 @@ class SimpleHttpServerHandler extends Thread {
     }
 
 
-    private String get404(){
-        return html.replace("{CONTENT}","");
+    private String get404() {
+        return html.replace("{CONTENT}", "");
     }
 
     private String getHeaderBase(String path) {
-        return  "HTTP/1.1 %code%\n"+
-                "Content-Type: " + getMimeType(path) + "\n"+
+        return "HTTP/1.1 %code%\n" +
+                "Content-Type: " + getMimeType(path) + "\n" +
                 "X-Cache: HIT\n" +
-                "Content-Length: %length%\n"+
+                "Content-Length: %length%\n" +
                 "Accept-Ranges: bytes\n" +
                 "Cache-Control: no-cache\n" +
                 "Pragma: no-cache\n" +
                 "Content-Encoding: identity\n" +
-                "Connection: close\n"+
+                "Connection: close\n" +
                 "Access-Control-Allow-Origin: *\n" + //TODO i should not allow any origin here, it should just be the server
-                "SimpleHttpService: SimpleHttpService/1.0\n\n";
+                "PeirrMobility: PeirrCast/1.0\n\n";
     }
 
 
-    public String getMimeType(String url){
+    public String getMimeType(String url) {
+//        Log.d(TAG, "getMimeType() [url: " + url + "]");
         String type = "text/html";
         String extension = MimeTypeMap.getFileExtensionFromUrl(url);
         if (!TextUtils.isEmpty(extension)) {
             MimeTypeMap mime = MimeTypeMap.getSingleton();
             type = mime.getMimeTypeFromExtension(extension);
+        } else if (url != null && (url.endsWith("mp3") || url.endsWith("ogg") || url.endsWith("wma")
+                || url.endsWith("wav") || url.endsWith("aac")|| url.endsWith("mp4a") || url.endsWith("ima4"))){
+            type = "audio/mpeg";
         }
+//        Log.d(TAG, "[extension:" + extension + "] [type:" + type + "]");
         return type;
+    }
+
+
+    public static Map<String, String> parseHTTPHeaders(InputStream inputStream) throws IOException {
+        int charRead;
+        StringBuffer sb = new StringBuffer();
+        while (true) {
+            sb.append((char) (charRead = inputStream.read()));
+            if ((char) charRead == '\r') {            // if we've got a '\r'
+                sb.append((char) inputStream.read()); // then write '\n'
+                charRead = inputStream.read();        // read the next char;
+                if (charRead == '\r') {                  // if it's another '\r'
+                    sb.append((char) inputStream.read());// write the '\n'
+                    break;
+                } else {
+                    sb.append((char) charRead);
+                }
+            }
+        }
+
+        String[] headersArray = sb.toString().split("\r\n");
+        Map<String, String> headers = new HashMap<>();
+        for (int i = 1; i < headersArray.length - 1; i++) {
+            headers.put(headersArray[i].split(": ")[0],
+                    headersArray[i].split(": ")[1]);
+        }
+
+        return headers;
     }
 
 }
