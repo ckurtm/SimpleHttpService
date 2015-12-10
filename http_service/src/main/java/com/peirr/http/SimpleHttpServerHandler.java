@@ -11,20 +11,16 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
-
 import com.peirr.http.utils.IO;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.URLDecoder;
-import java.util.HashMap;
-import java.util.Map;
 
 class SimpleHttpServerHandler extends Thread {
     String TAG = SimpleHttpServerHandler.class.getSimpleName();
@@ -43,17 +39,14 @@ class SimpleHttpServerHandler extends Thread {
     public void run() {
         String path = "";
         try {
-            SimpleHttpRequestParser parser2 =  new SimpleHttpRequestParser(toClient.getInputStream());
-            parser2.parseRequest();
-            Map<String,String> headers = parser2.getHeaders();
-//            Map<String,String> params = parser2.getParams();
-            path = parser2.getRequestURL();
-            Log.d(TAG,"M[ " + parser2.getMethod() +  "]");
-            for(String header:headers.keySet()) {
-                Log.d(TAG, "H[" + header + "] : " + headers.get(header));
+            if(!toClient.isClosed()) {
+                SimpleHttpRequestParser parser2 = new SimpleHttpRequestParser(toClient.getInputStream());
+                parser2.parseRequest();
+                path = parser2.getRequestURL();
+                Log.d(TAG, "M[ " + parser2.getMethod() + "] [path:" + path + "]");
             }
         } catch (Exception e) {
-            Log.e(TAG, "error reading request: " + e.getMessage(),e);
+            Log.e(TAG, "error reading request: ",e);
             SimpleHttpServer.remove(toClient);
             try {
                 toClient.close();
@@ -132,7 +125,7 @@ class SimpleHttpServerHandler extends Thread {
                 Log.d(TAG, "NOT FOUND [" + path + "]");
                 // Send HTML-File (Ascii, not as a stream)
                 header = getHeaderBase(path);
-                header = header.replace("%code%", "404 File not found");
+                header = header.replace("%code%", "200");
                 header = header.replace("%length%", "" + get404().length());
                 PrintWriter out = new PrintWriter(toClient.getOutputStream(), true);
                 out.print(header);
@@ -165,6 +158,13 @@ class SimpleHttpServerHandler extends Thread {
                 "PeirrMobility: PeirrCast/1.0\n\n";
     }
 
+    private String getDefaultHeaders(String origin) {
+        return "HTTP/1.1 200\n" +
+                "Content-Type: text/html; charset=utf-8\n" +
+                "Access-Control-Allow-Origin: "+origin+"\n" +
+                "PeirrMobility: PeirrCast/1.0\n\n";
+    }
+
 
     public String getMimeType(String url) {
 //        Log.d(TAG, "getMimeType() [url: " + url + "]");
@@ -180,33 +180,4 @@ class SimpleHttpServerHandler extends Thread {
 //        Log.d(TAG, "[extension:" + extension + "] [type:" + type + "]");
         return type;
     }
-
-
-    public static Map<String, String> parseHTTPHeaders(InputStream inputStream) throws IOException {
-        int charRead;
-        StringBuffer sb = new StringBuffer();
-        while (true) {
-            sb.append((char) (charRead = inputStream.read()));
-            if ((char) charRead == '\r') {            // if we've got a '\r'
-                sb.append((char) inputStream.read()); // then write '\n'
-                charRead = inputStream.read();        // read the next char;
-                if (charRead == '\r') {                  // if it's another '\r'
-                    sb.append((char) inputStream.read());// write the '\n'
-                    break;
-                } else {
-                    sb.append((char) charRead);
-                }
-            }
-        }
-
-        String[] headersArray = sb.toString().split("\r\n");
-        Map<String, String> headers = new HashMap<>();
-        for (int i = 1; i < headersArray.length - 1; i++) {
-            headers.put(headersArray[i].split(": ")[0],
-                    headersArray[i].split(": ")[1]);
-        }
-
-        return headers;
-    }
-
 }

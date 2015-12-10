@@ -44,7 +44,7 @@ public class SimpleHttpServer extends Thread {
                 send("Waiting for connections");
                 Socket client = listener.accept();
                 send("New connection from " + client.getInetAddress().toString());
-                releaseHttpThread();
+//                releaseHttpThread();
                 httpThread = new SimpleHttpServerHandler(documentRoot, context, client);
                 httpThread.start();
                 clientList.add(client);
