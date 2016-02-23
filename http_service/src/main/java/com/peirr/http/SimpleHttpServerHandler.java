@@ -6,48 +6,53 @@
 
 package com.peirr.http;
 
-import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
-import android.webkit.MimeTypeMap;
-
-
-import com.peirr.http.utils.IO;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.net.URLConnection;
 import java.net.URLDecoder;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+
+import okio.Buffer;
+import okio.BufferedSink;
+import okio.Okio;
+import okio.Source;
 
 class SimpleHttpServerHandler extends Thread {
+
     String TAG = SimpleHttpServerHandler.class.getSimpleName();
     private Socket toClient;
     private String documentRoot;
-    private Context context;
     private String html = "<html><body bgcolor=\"#000\" text=\"#fff\">{CONTENT}<body><html>";
-    private final int BUFFER_SIZE = 1024;
+    private final int BUFFER_SIZE = 16 * 1024;
 
-    public SimpleHttpServerHandler(String d, Context c, Socket s) {
+    public SimpleHttpServerHandler(String d,Socket s) {
         toClient = s;
         documentRoot = d;
-        context = c;
     }
 
     public void run() {
         String path = "";
         try {
-            if(!toClient.isClosed()) {
+            if (!toClient.isClosed()) {
                 SimpleHttpRequestParser parser2 = new SimpleHttpRequestParser(toClient.getInputStream());
                 parser2.parseRequest();
                 path = parser2.getRequestURL();
                 Log.d(TAG, "M[ " + parser2.getMethod() + "] [path:" + path + "]");
             }
         } catch (Exception e) {
-            Log.e(TAG, "error reading request: ",e);
+            Log.e(TAG, "error reading request: ", e);
             SimpleHttpServer.remove(toClient);
             try {
                 toClient.close();
@@ -106,6 +111,7 @@ class SimpleHttpServerHandler extends Thread {
                 path = "404.html";
             }
         } catch (Exception e) {
+            //TODO and then what?
         }
         if (!path.equals(documentRoot + "403.html")) {
             header = getHeaderBase(path).replace("%code%", "200 OK");
@@ -119,8 +125,7 @@ class SimpleHttpServerHandler extends Thread {
                 FileInputStream fis = new FileInputStream(f);
                 OutputStream os = toClient.getOutputStream();
                 os.write(header.getBytes());
-                IO.bufferSize = BUFFER_SIZE; //TODO set this depending on the amount of RAM thats available to phone
-                IO.copy(fis, os);
+                copy(fis, os);
                 fis.close();
             } else {
                 Log.d(TAG, "NOT FOUND [" + path + "]");
@@ -136,7 +141,7 @@ class SimpleHttpServerHandler extends Thread {
             SimpleHttpServer.remove(toClient);
             toClient.close();
         } catch (Exception e) {
-
+//TODO and then what??
         }
     }
 
@@ -156,29 +161,41 @@ class SimpleHttpServerHandler extends Thread {
                 "Content-Encoding: identity\n" +
                 "Connection: close\n" +
                 "Access-Control-Allow-Origin: *\n" + //TODO i should not allow any origin here, it should just be the server
-                "PeirrMobility: PeirrCast/1.0\n\n";
+                "SimpleHttpService: Kurt.Mbanje/1.0\n\n";
     }
 
     private String getDefaultHeaders(String origin) {
         return "HTTP/1.1 200\n" +
                 "Content-Type: text/html; charset=utf-8\n" +
-                "Access-Control-Allow-Origin: "+origin+"\n" +
-                "PeirrMobility: PeirrCast/1.0\n\n";
+                "Access-Control-Allow-Origin: " + origin + "\n" +
+                "SimpleHttpService: Kurt.Mbanje/1.0\n\n";
     }
 
 
     public String getMimeType(String url) {
-//        Log.d(TAG, "getMimeType() [url: " + url + "]");
-        String type = "text/html";
-        String extension = MimeTypeMap.getFileExtensionFromUrl(url);
-        if (!TextUtils.isEmpty(extension)) {
-            MimeTypeMap mime = MimeTypeMap.getSingleton();
-            type = mime.getMimeTypeFromExtension(extension);
-        } else if (url != null && (url.endsWith("mp3") || url.endsWith("ogg") || url.endsWith("wma")
-                || url.endsWith("wav") || url.endsWith("aac")|| url.endsWith("mp4a") || url.endsWith("ima4"))){
-            type = "audio/mpeg";
-        }
-//        Log.d(TAG, "[extension:" + extension + "] [type:" + type + "]");
+        File file = new File(url);
+        String type = URLConnection.guessContentTypeFromName(file.getAbsolutePath());
+        Log.d(TAG, "getMimeType() [url: " + url + "] [type: " + type + "]");
         return type;
+    }
+
+
+    private void copy(final InputStream src, final OutputStream dest) throws IOException {
+        ReadableByteChannel inputChannel = Channels.newChannel(src);
+        WritableByteChannel outputChannel = Channels.newChannel(dest);
+        copy(inputChannel, outputChannel);
+    }
+
+    private void copy(final ReadableByteChannel src, final WritableByteChannel dest) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
+        while(src.read(buffer) != -1) {
+            buffer.flip();
+            dest.write(buffer);
+            buffer.compact();
+        }
+        buffer.flip();
+        while(buffer.hasRemaining()) {
+            dest.write(buffer);
+        }
     }
 }

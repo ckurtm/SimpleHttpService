@@ -104,6 +104,7 @@ task findConventions << {
 
 dependencies {
     compile 'com.squareup:javapoet:1.2.0'
+    compile 'com.squareup.okio:okio:1.6.0'
     compile 'ckm.simple:remote-service-processor:1.0.3'
     compile 'ckm.simple:remote-service-annotation:1.0.3'
 }

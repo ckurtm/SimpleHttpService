@@ -97,7 +97,7 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
             }
             SimpleHttpInfo info = getInfo(this,ip, SimpleHttpService.port);
             ip = info.ip;
-            server = new SimpleHttpServer(serverHandler, serverRoot,info.ip,info.port,getApplicationContext());
+            server = new SimpleHttpServer(serverHandler, serverRoot,info.ip,info.port);
             server.start();
             currentState = STATE_RUNNING;
             Log.d(TAG, "boot success...");

@@ -6,7 +6,6 @@
 
 package com.peirr.http;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -24,14 +23,12 @@ public class SimpleHttpServer extends Thread {
     private boolean running = true;
     private String documentRoot;
     private static Handler handler;
-    private Context context;
     private SimpleHttpServerHandler httpThread;
     public static LinkedList<Socket> clientList = new LinkedList<Socket>();
 
-    public SimpleHttpServer(Handler handler, String documentRoot, String ip, int port, Context context) throws IOException {
+    public SimpleHttpServer(Handler handler, String documentRoot, String ip, int port) throws IOException {
         super();
         this.documentRoot = documentRoot;
-        this.context = context;
         SimpleHttpServer.handler = handler;
         InetAddress ipadr = InetAddress.getByName(ip);
         listener = new ServerSocket(port, 0, ipadr);
@@ -44,13 +41,12 @@ public class SimpleHttpServer extends Thread {
                 send("Waiting for connections");
                 Socket client = listener.accept();
                 send("New connection from " + client.getInetAddress().toString());
-//                releaseHttpThread();
-                httpThread = new SimpleHttpServerHandler(documentRoot, context, client);
+                httpThread = new SimpleHttpServerHandler(documentRoot, client);
                 httpThread.start();
                 clientList.add(client);
             } catch (IOException e) {
                 send(e.getMessage());
-                Log.w(TAG,"server shutdown ..: ");
+                Log.w(TAG, "server shutdown ..: ");
             }
         }
     }
@@ -66,19 +62,19 @@ public class SimpleHttpServer extends Thread {
     public void stopServer() {
         setRunning(false);
         try {
-            for(Socket client:clientList){
+            for (Socket client : clientList) {
                 client.close();
             }
             releaseHttpThread();
             listener.close();
         } catch (IOException e) {
             send(e.getMessage());
-            Log.e(TAG,"server shutdown error: " +  Log.getStackTraceString(e));
+            Log.e(TAG, "server shutdown error: " + Log.getStackTraceString(e));
         }
     }
 
 
-    private void releaseHttpThread(){
+    private void releaseHttpThread() {
         if (httpThread != null) {
             httpThread.release();
             httpThread.interrupt();
