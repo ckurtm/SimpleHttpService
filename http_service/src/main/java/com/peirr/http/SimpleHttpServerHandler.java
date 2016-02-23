@@ -24,11 +24,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
-import okio.Buffer;
-import okio.BufferedSink;
-import okio.Okio;
-import okio.Source;
-
 class SimpleHttpServerHandler extends Thread {
 
     String TAG = SimpleHttpServerHandler.class.getSimpleName();
@@ -37,7 +32,7 @@ class SimpleHttpServerHandler extends Thread {
     private String html = "<html><body bgcolor=\"#000\" text=\"#fff\">{CONTENT}<body><html>";
     private final int BUFFER_SIZE = 16 * 1024;
 
-    public SimpleHttpServerHandler(String d,Socket s) {
+    public SimpleHttpServerHandler(String d, Socket s) {
         toClient = s;
         documentRoot = d;
     }
@@ -126,6 +121,7 @@ class SimpleHttpServerHandler extends Thread {
                 OutputStream os = toClient.getOutputStream();
                 os.write(header.getBytes());
                 copy(fis, os);
+//                okioCopy(fis,os);
                 fis.close();
             } else {
                 Log.d(TAG, "NOT FOUND [" + path + "]");
@@ -181,6 +177,7 @@ class SimpleHttpServerHandler extends Thread {
 
 
     private void copy(final InputStream src, final OutputStream dest) throws IOException {
+
         ReadableByteChannel inputChannel = Channels.newChannel(src);
         WritableByteChannel outputChannel = Channels.newChannel(dest);
         copy(inputChannel, outputChannel);
@@ -188,14 +185,22 @@ class SimpleHttpServerHandler extends Thread {
 
     private void copy(final ReadableByteChannel src, final WritableByteChannel dest) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
-        while(src.read(buffer) != -1) {
+        while (src.read(buffer) != -1) {
             buffer.flip();
             dest.write(buffer);
             buffer.compact();
         }
         buffer.flip();
-        while(buffer.hasRemaining()) {
+        while (buffer.hasRemaining()) {
             dest.write(buffer);
         }
+    }
+
+    void okioCopy(InputStream in, OutputStream out) throws IOException {
+//        BufferedSource source = Okio.buffer(Okio.source(in));
+//        BufferedSink sink = Okio.buffer(Okio.sink(out));
+//        while(!source.exhausted()) {
+//            sink.write(source, BUFFER_SIZE);
+//        }
     }
 }
