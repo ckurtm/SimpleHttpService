@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
+
 import com.peirr.http.utils.IO;
 
 import java.io.File;
@@ -28,7 +29,7 @@ class SimpleHttpServerHandler extends Thread {
     private String documentRoot;
     private Context context;
     private String html = "<html><body bgcolor=\"#000\" text=\"#fff\">{CONTENT}<body><html>";
-    private final int BUFFER_SIZE = 2048;
+    private final int BUFFER_SIZE = 1024;
 
     public SimpleHttpServerHandler(String d, Context c, Socket s) {
         toClient = s;

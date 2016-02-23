@@ -14,5 +14,5 @@ public interface ISimpleHttpServiceServer extends IServiceServer {
             SimpleHttpService.STATE_STOPPED,
             SimpleHttpService.STATE_ERROR
     })
-    void onHttpServerStateChanged(int state,SimpleHttpInfo info);
+    void onHttpServerStateChanged(int state, SimpleHttpInfo info);
 }

@@ -12,6 +12,7 @@ import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 
+
 import com.peirr.http.SimpleHttpServer;
 
 import java.lang.ref.WeakReference;
@@ -39,8 +40,13 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
     private static final int PORT_MIN = 9950;
     private static final int PORT_MAX = 9999;
 
+    public static final String COMMAND = "command";
+    public static final int CMD_SHUTDOWN = 20;
+    public static final int CMD_BOOTUP = 22;
+
+
     private String ip;
-    private int port;
+    private static int port = -1;
     private SimpleHttpServiceConnector connector;
     private SimpleHttpServer server;
     private String serverRoot = "";
@@ -66,13 +72,30 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
     }
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent != null) {
+            final int command = intent.getIntExtra(COMMAND, -1);
+            switch (command) {
+                case CMD_BOOTUP:
+                    bootup(port);
+                    break;
+                case CMD_SHUTDOWN:
+                    shutdown();
+                    break;
+            }
+        }
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+
+    @Override
     public void bootup(int port) {
         Log.d(TAG, "bootup()");
         try{
             if(port != 0){
-                this.port = port;
+                SimpleHttpService.port = port;
             }
-            SimpleHttpInfo info = getInfo(this,ip,this.port);
+            SimpleHttpInfo info = getInfo(this,ip, SimpleHttpService.port);
             ip = info.ip;
             server = new SimpleHttpServer(serverHandler, serverRoot,info.ip,info.port,getApplicationContext());
             server.start();
@@ -112,7 +135,7 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
     @Override
     public void info(int port) {
         if(port != 0){
-            this.port = port;
+            SimpleHttpService.port = port;
         }
         Log.d(TAG,"info()");
         SimpleHttpInfo info = getInfo(this,ip,port);
@@ -130,6 +153,8 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
     }
 
     public static int generatePort(){
+        if(port != -1)
+            return port;
         return randomPort(PORT_MIN,PORT_MAX);
     }
 

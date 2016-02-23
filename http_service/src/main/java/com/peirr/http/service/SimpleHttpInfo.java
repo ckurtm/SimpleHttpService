@@ -40,7 +40,7 @@ public class SimpleHttpInfo implements Parcelable {
 
 
 
-    public static final Parcelable.Creator<SimpleHttpInfo> CREATOR = new Parcelable.Creator<SimpleHttpInfo>() {
+    public static final Creator<SimpleHttpInfo> CREATOR = new Creator<SimpleHttpInfo>() {
         public SimpleHttpInfo createFromParcel(Parcel source) {
             return new SimpleHttpInfo(source);
         }
@@ -49,4 +49,10 @@ public class SimpleHttpInfo implements Parcelable {
             return new SimpleHttpInfo[size];
         }
     };
+
+
+    @Override
+    public String toString() {
+        return  "[" + ip + ':' + port + "]";
+    }
 }

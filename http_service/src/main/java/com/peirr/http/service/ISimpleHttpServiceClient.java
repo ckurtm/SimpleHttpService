@@ -8,7 +8,7 @@ import mbanje.kurt.remote_service.RemoteServiceClient;
  * Created by kurt on 2015/11/23.
  */
 @RemoteServiceClient(SimpleHttpService.class)
-public interface ISimpleHttpServiceClient extends IServiceClient{
+public interface ISimpleHttpServiceClient extends IServiceClient {
 
     @RemoteMessageClient(SimpleHttpService.REQUEST_START)
     void bootup(int port);
