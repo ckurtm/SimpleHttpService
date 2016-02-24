@@ -5,7 +5,7 @@ import com.peirr.http.service.ISimpleHttpServiceServer;
 /**
  * Created by kurt on 2015/11/24.
  */
-public interface HttpRepository {
+public interface IServerRequest {
     void bootup();
     void shutdown();
     void info();

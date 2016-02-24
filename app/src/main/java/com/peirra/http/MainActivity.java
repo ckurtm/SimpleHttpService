@@ -3,32 +3,31 @@ package com.peirra.http;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import com.peirr.http.service.SimpleHttpInfo;
-import com.peirr.http.service.SimpleHttpService;
 import com.peirr.http.mvp.HttpContract;
 import com.peirr.http.mvp.HttpPresenter;
-import com.peirr.http.mvp.HttpRepositories;
-import com.peirr.http.mvp.HttpRepository;
+import com.peirr.http.mvp.HttpServer;
+import com.peirr.http.mvp.IServerRequest;
+import com.peirr.http.service.SimpleHttpInfo;
+import com.peirr.http.service.SimpleHttpService;
 
 public class MainActivity extends AppCompatActivity implements HttpContract.View {
 
     String TAG = MainActivity.class.getSimpleName();
     TextView message;
     HttpPresenter presenter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         message = (TextView) findViewById(R.id.message);
 
-        HttpRepository repository = new HttpRepositories(this,SimpleHttpService.generatePort());
-        presenter = new HttpPresenter(repository,this);
+        IServerRequest server = new HttpServer(this, SimpleHttpService.generatePort());
+        presenter = new HttpPresenter(server, this);
 
         Switch plug = (Switch) findViewById(R.id.switch1);
         plug.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -41,41 +40,25 @@ public class MainActivity extends AppCompatActivity implements HttpContract.View
                 }
             }
         });
-
-        Button button = (Button) findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                presenter.info();
-            }
-        });
-
-
-        Button button1 = (Button) findViewById(R.id.button2);
-        button1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                presenter.shutdown();
-            }
-        });
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onStart() {
+        super.onStart();
         presenter.connect();
     }
 
+
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onDestroy() {
+        super.onDestroy();
         presenter.disconnect();
     }
 
     @Override
     public void showHttpStatus(int status, SimpleHttpInfo info) {
-        Log.d(TAG,"showHttpStatus() [state:"+status+"] [http://"+info.ip +":"+info.port+"]");
-        switch (status){
+        Log.d(TAG, "showHttpStatus() [state:" + status + "] [http://" + info.ip + ":" + info.port + "]");
+        switch (status) {
             case SimpleHttpService.STATE_RUNNING:
                 message.setText(info.ip + ":" + info.port);
                 break;

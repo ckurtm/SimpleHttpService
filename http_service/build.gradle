@@ -3,7 +3,7 @@ apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
-version = "1.5"
+version = "1.6"
 group = "com.peirr.http"
 
 def siteUrl = 'https://github.com/ckurtm/SimpleHttpService'
@@ -16,8 +16,8 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 5
-        versionName "1.5"
+        versionCode 6
+        versionName "1.6"
     }
     buildTypes {
         release {

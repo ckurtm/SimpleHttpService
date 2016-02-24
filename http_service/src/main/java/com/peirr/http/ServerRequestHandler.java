@@ -24,15 +24,15 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
-class SimpleHttpServerHandler extends Thread {
+class ServerRequestHandler extends Thread {
 
-    String TAG = SimpleHttpServerHandler.class.getSimpleName();
+    String TAG = ServerRequestHandler.class.getSimpleName();
     private Socket toClient;
     private String documentRoot;
     private String html = "<html><body bgcolor=\"#000\" text=\"#fff\">{CONTENT}<body><html>";
     private final int BUFFER_SIZE = 16 * 1024;
 
-    public SimpleHttpServerHandler(String d, Socket s) {
+    public ServerRequestHandler(String d, Socket s) {
         toClient = s;
         documentRoot = d;
     }
@@ -41,14 +41,14 @@ class SimpleHttpServerHandler extends Thread {
         String path = "";
         try {
             if (!toClient.isClosed()) {
-                SimpleHttpRequestParser parser2 = new SimpleHttpRequestParser(toClient.getInputStream());
+                RequestParser parser2 = new RequestParser(toClient.getInputStream());
                 parser2.parseRequest();
                 path = parser2.getRequestURL();
                 Log.d(TAG, "M[ " + parser2.getMethod() + "] [path:" + path + "]");
             }
         } catch (Exception e) {
             Log.e(TAG, "error reading request: ", e);
-            SimpleHttpServer.remove(toClient);
+            SocketThread.remove(toClient);
             try {
                 toClient.close();
             } catch (Exception ex) {
@@ -107,6 +107,7 @@ class SimpleHttpServerHandler extends Thread {
             }
         } catch (Exception e) {
             //TODO and then what?
+            Log.e(TAG,Log.getStackTraceString(e));
         }
         if (!path.equals(documentRoot + "403.html")) {
             header = getHeaderBase(path).replace("%code%", "200 OK");
@@ -134,10 +135,12 @@ class SimpleHttpServerHandler extends Thread {
                 out.print(get404());
                 out.flush();
             }
-            SimpleHttpServer.remove(toClient);
+            SocketThread.remove(toClient);
             toClient.close();
         } catch (Exception e) {
 //TODO and then what??
+            Log.e(TAG,Log.getStackTraceString(e));
+
         }
     }
 

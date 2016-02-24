@@ -9,14 +9,14 @@ import com.peirr.http.service.SimpleHttpServiceClient;
 /**
  * Created by kurt on 2015/11/24.
  */
-public class HttpRepositories implements HttpRepository,ISimpleHttpServiceServer {
+public class HttpServer implements IServerRequest,ISimpleHttpServiceServer {
 
     private final Activity activity;
     private SimpleHttpServiceClient http;
     private ISimpleHttpServiceServer listener;
     private final int port;
 
-    public HttpRepositories(Activity activity,int port) {
+    public HttpServer(Activity activity, int port) {
         this.activity = activity;
         this.port = port;
         http =  SimpleHttpServiceClient.createStub(activity,this);

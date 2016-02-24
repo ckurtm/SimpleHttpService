@@ -13,7 +13,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 
-import com.peirr.http.SimpleHttpServer;
+import com.peirr.http.SocketThread;
 
 import java.lang.ref.WeakReference;
 import java.security.SecureRandom;
@@ -48,7 +48,7 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
     private String ip;
     private static int port = -1;
     private SimpleHttpServiceConnector connector;
-    private SimpleHttpServer server;
+    private SocketThread server;
     private String serverRoot = "";
     private Handler serverHandler = new ServerHandler(this);
     private static SecureRandom random = new SecureRandom();
@@ -97,7 +97,7 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
             }
             SimpleHttpInfo info = getInfo(this,ip, SimpleHttpService.port);
             ip = info.ip;
-            server = new SimpleHttpServer(serverHandler, serverRoot,info.ip,info.port);
+            server = new SocketThread(serverHandler, serverRoot,info.ip,info.port);
             server.start();
             currentState = STATE_RUNNING;
             Log.d(TAG, "boot success...");

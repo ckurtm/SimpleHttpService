@@ -17,19 +17,19 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 
-public class SimpleHttpServer extends Thread {
-    String TAG = SimpleHttpServer.class.getSimpleName();
+public class SocketThread extends Thread {
+    String TAG = SocketThread.class.getSimpleName();
     private ServerSocket listener = null;
     private boolean running = true;
     private String documentRoot;
     private static Handler handler;
-    private SimpleHttpServerHandler httpThread;
+    private ServerRequestHandler httpThread;
     public static LinkedList<Socket> clientList = new LinkedList<Socket>();
 
-    public SimpleHttpServer(Handler handler, String documentRoot, String ip, int port) throws IOException {
+    public SocketThread(Handler handler, String documentRoot, String ip, int port) throws IOException {
         super();
         this.documentRoot = documentRoot;
-        SimpleHttpServer.handler = handler;
+        SocketThread.handler = handler;
         InetAddress ipadr = InetAddress.getByName(ip);
         listener = new ServerSocket(port, 0, ipadr);
     }
@@ -41,7 +41,7 @@ public class SimpleHttpServer extends Thread {
                 send("Waiting for connections");
                 Socket client = listener.accept();
                 send("New connection from " + client.getInetAddress().toString());
-                httpThread = new SimpleHttpServerHandler(documentRoot, client);
+                httpThread = new ServerRequestHandler(documentRoot, client);
                 httpThread.start();
                 clientList.add(client);
             } catch (IOException e) {

@@ -29,7 +29,7 @@ import java.util.Hashtable;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public class SimpleHttpRequestParser {
+public class RequestParser {
     private static final String[][] HttpReplies = {{"100", "Continue"},
             {"101", "Switching Protocols"},
             {"200", "OK"},
@@ -77,7 +77,7 @@ public class SimpleHttpRequestParser {
     private Hashtable headers, params;
     private int[] ver;
 
-    public SimpleHttpRequestParser(InputStream is) {
+    public RequestParser(InputStream is) {
         reader = new BufferedReader(new InputStreamReader(is));
         method = "";
         url = "";

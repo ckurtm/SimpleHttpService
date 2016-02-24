@@ -8,10 +8,10 @@ import com.peirr.http.service.SimpleHttpInfo;
  */
 public class HttpPresenter implements HttpContract.ActionsListener, ISimpleHttpServiceServer {
 
-    private final HttpRepository repository;
+    private final IServerRequest repository;
     private final HttpContract.View view;
 
-    public HttpPresenter(HttpRepository repository, HttpContract.View view) {
+    public HttpPresenter(IServerRequest repository, HttpContract.View view) {
         this.repository = repository;
         this.view = view;
         repository.setListener(this);
