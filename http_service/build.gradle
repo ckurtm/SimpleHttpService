@@ -12,6 +12,9 @@ def gitUrl = 'https://github.com/ckurtm/SimpleHttpService.git'
 android {
     compileSdkVersion 24
     buildToolsVersion "24.0.2"
+    lintOptions {
+        abortOnError false
+    }
 
     defaultConfig {
         minSdkVersion 15
@@ -97,9 +100,9 @@ artifacts {
     archives sourcesJar
 }
 
-task findConventions << {
-    println project.getConvention()
-}
+//task findConventions << {
+//    println project.getConvention()
+//}
 
 
 dependencies {
@@ -107,3 +110,4 @@ dependencies {
     compile 'ckm.simple:remote-service-processor:1.0.3'
     compile 'ckm.simple:remote-service-annotation:1.0.3'
 }
+
