@@ -117,6 +117,7 @@ class ServerRequestHandler extends Thread {
             File f = new File(path);
             if (f.exists()) { //TODO only allow access to files in the apps folders
                 Log.d(TAG, "FOUND [" + path + "]");
+                header = header.replace("%code%", "200");
                 header = header.replace("%length%", "" + f.length());
                 FileInputStream fis = new FileInputStream(f);
                 OutputStream os = toClient.getOutputStream();
@@ -128,7 +129,7 @@ class ServerRequestHandler extends Thread {
                 Log.d(TAG, "NOT FOUND [" + path + "]");
                 // Send HTML-File (Ascii, not as a stream)
                 header = getHeaderBase(path);
-                header = header.replace("%code%", "200");
+                header = header.replace("%code%", "404");
                 header = header.replace("%length%", "" + get404().length());
                 PrintWriter out = new PrintWriter(toClient.getOutputStream(), true);
                 out.print(header);
@@ -152,11 +153,11 @@ class ServerRequestHandler extends Thread {
     private String getHeaderBase(String path) {
         return "HTTP/1.1 %code%\n" +
                 "Content-Type: " + getMimeType(path) + "\n" +
+                "Content-Length: " + getContentLength(path) + "\n" +
                 "X-Cache: HIT\n" +
-                "Content-Length: %length%\n" +
                 "Accept-Ranges: bytes\n" +
-                "Cache-Control: no-cache\n" +
-                "Pragma: no-cache\n" +
+//                "Cache-Control: no-cache\n" +
+//                "Pragma: no-cache\n" +
                 "Content-Encoding: identity\n" +
                 "Connection: close\n" +
                 "Access-Control-Allow-Origin: *\n" + //TODO i should not allow any origin here, it should just be the server
@@ -176,6 +177,11 @@ class ServerRequestHandler extends Thread {
         String type = URLConnection.guessContentTypeFromName(file.getAbsolutePath());
         Log.d(TAG, "getMimeType() [url: " + url + "] [type: " + type + "]");
         return type;
+    }
+
+    public String getContentLength(String url) {
+        File file = new File(url);
+        return String.valueOf(file.length());
     }
 
 

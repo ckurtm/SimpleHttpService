@@ -3,21 +3,21 @@ apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
-version = "1.6"
+version = "1.7"
 group = "com.peirr.http"
 
 def siteUrl = 'https://github.com/ckurtm/SimpleHttpService'
 def gitUrl = 'https://github.com/ckurtm/SimpleHttpService.git'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    compileSdkVersion 24
+    buildToolsVersion "24.0.2"
 
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 23
-        versionCode 6
-        versionName "1.6"
+        targetSdkVersion 24
+        versionCode 7
+        versionName "1.7"
     }
     buildTypes {
         release {
@@ -103,8 +103,7 @@ task findConventions << {
 
 
 dependencies {
-    compile 'com.squareup:javapoet:1.2.0'
-//    compile 'com.squareup.okio:okio:1.6.0'
+    compile 'com.squareup:javapoet:1.7.0'
     compile 'ckm.simple:remote-service-processor:1.0.3'
     compile 'ckm.simple:remote-service-annotation:1.0.3'
 }

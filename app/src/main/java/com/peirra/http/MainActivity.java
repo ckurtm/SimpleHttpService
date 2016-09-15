@@ -50,10 +50,11 @@ public class MainActivity extends AppCompatActivity implements HttpContract.View
 
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onStop() {
+        super.onStop();
         presenter.disconnect();
     }
+
 
     @Override
     public void showHttpStatus(int status, SimpleHttpInfo info) {
