@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements HttpContract.View
         button = (Button) findViewById(R.id.button);
 
         IServerRequest server = new HttpServer(this, SimpleHttpService.generatePort());
-        presenter = new HttpPresenter(server, this);
+        presenter = new HttpPresenter(server);
 
         Switch plug = (Switch) findViewById(R.id.switch1);
         plug.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -60,14 +60,14 @@ public class MainActivity extends AppCompatActivity implements HttpContract.View
     @Override
     protected void onStart() {
         super.onStart();
-        presenter.connect();
+        presenter.attachView(this);
     }
 
 
     @Override
     protected void onStop() {
         super.onStop();
-        presenter.disconnect();
+        presenter.detachView();
     }
 
 

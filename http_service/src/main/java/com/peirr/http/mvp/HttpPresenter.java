@@ -1,19 +1,18 @@
 package com.peirr.http.mvp;
 
+import com.peirr.common.BasePresenter;
 import com.peirr.http.service.ISimpleHttpServiceServer;
 import com.peirr.http.service.SimpleHttpInfo;
 
 /**
  * Created by kurt on 2015/11/24.
  */
-public class HttpPresenter implements HttpContract.ActionsListener, ISimpleHttpServiceServer {
+public class HttpPresenter extends BasePresenter<HttpContract.View> implements HttpContract.Presenter, ISimpleHttpServiceServer {
 
     private final IServerRequest request;
-    private final HttpContract.View view;
 
-    public HttpPresenter(IServerRequest request, HttpContract.View view) {
+    public HttpPresenter(IServerRequest request) {
         this.request = request;
-        this.view = view;
         request.setListener(this);
     }
 
@@ -54,7 +53,9 @@ public class HttpPresenter implements HttpContract.ActionsListener, ISimpleHttpS
 
     @Override
     public void onHttpServerStateChanged(int state, SimpleHttpInfo info) {
-        view.showHttpStatus(state, info);
+        if(isViewAttached()) {
+            getView().showHttpStatus(state, info);
+        }
     }
 
     @Override
@@ -62,5 +63,17 @@ public class HttpPresenter implements HttpContract.ActionsListener, ISimpleHttpS
         if (connected) {
             request.info();
         }
+    }
+
+    @Override
+    public void attachView(final HttpContract.View mvpView) {
+        super.attachView(mvpView);
+        connect();
+    }
+
+    @Override
+    public void detachView() {
+        super.detachView();
+        disconnect();
     }
 }
