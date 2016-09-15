@@ -120,6 +120,7 @@ public class SimpleHttpService extends Service implements ISimpleHttpServiceClie
         SimpleHttpInfo info = getInfo(this,ip,port);
         this.ip = info.ip;
         connector.send(STATE_STOPPED, info);
+        server = null;
         stopSelf();
     }
 

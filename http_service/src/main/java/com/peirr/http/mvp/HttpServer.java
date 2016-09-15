@@ -1,9 +1,11 @@
 package com.peirr.http.mvp;
 
 import android.app.Activity;
+import android.content.Intent;
 
 import com.peirr.http.service.ISimpleHttpServiceServer;
 import com.peirr.http.service.SimpleHttpInfo;
+import com.peirr.http.service.SimpleHttpService;
 import com.peirr.http.service.SimpleHttpServiceClient;
 
 /**
@@ -20,6 +22,20 @@ public class HttpServer implements IServerRequest,ISimpleHttpServiceServer {
         this.activity = activity;
         this.port = port;
         http =  SimpleHttpServiceClient.createStub(activity,this);
+    }
+
+    @Override
+    public void startService() {
+        Intent intent = new Intent(activity.getApplicationContext(), SimpleHttpService.class);
+        intent.putExtra(SimpleHttpService.COMMAND,SimpleHttpService.CMD_BOOTUP);
+        activity.startService(intent);
+    }
+
+    @Override
+    public void stopService() {
+        Intent intent = new Intent(activity.getApplicationContext(), SimpleHttpService.class);
+        intent.putExtra(SimpleHttpService.COMMAND,SimpleHttpService.CMD_SHUTDOWN);
+        activity.startService(intent);
     }
 
     @Override

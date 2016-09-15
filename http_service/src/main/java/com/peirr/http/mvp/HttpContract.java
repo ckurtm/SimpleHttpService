@@ -17,6 +17,8 @@ public class HttpContract {
         void info();
         void connect();
         void disconnect();
+        void startService();
+        void stopService();
     }
 
 }

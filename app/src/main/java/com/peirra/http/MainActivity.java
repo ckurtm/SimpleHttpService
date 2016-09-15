@@ -3,6 +3,8 @@ package com.peirra.http;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -17,14 +19,16 @@ import com.peirr.http.service.SimpleHttpService;
 public class MainActivity extends AppCompatActivity implements HttpContract.View {
 
     String TAG = MainActivity.class.getSimpleName();
-    TextView message;
-    HttpPresenter presenter;
+    private TextView message;
+    private Button button;
+    private HttpPresenter presenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         message = (TextView) findViewById(R.id.message);
+        button = (Button) findViewById(R.id.button);
 
         IServerRequest server = new HttpServer(this, SimpleHttpService.generatePort());
         presenter = new HttpPresenter(server, this);
@@ -37,6 +41,17 @@ public class MainActivity extends AppCompatActivity implements HttpContract.View
                     presenter.bootup();
                 } else {
                     presenter.shutdown();
+                }
+            }
+        });
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                if(button.getText().equals("STOP")){
+                    presenter.stopService();
+                }else{
+                    presenter.startService();
                 }
             }
         });
@@ -62,12 +77,15 @@ public class MainActivity extends AppCompatActivity implements HttpContract.View
         switch (status) {
             case SimpleHttpService.STATE_RUNNING:
                 message.setText(info.ip + ":" + info.port);
+                button.setText("STOP");
                 break;
             case SimpleHttpService.STATE_STOPPED:
                 message.setText("STATE_STOPPED [" + info.ip + ":" + info.port + "]");
+                button.setText("START");
                 break;
             case SimpleHttpService.STATE_ERROR:
                 message.setText("STATE_ERROR");
+                button.setText("STOP");
                 break;
         }
     }

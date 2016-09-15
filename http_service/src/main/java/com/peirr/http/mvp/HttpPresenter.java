@@ -8,38 +8,48 @@ import com.peirr.http.service.SimpleHttpInfo;
  */
 public class HttpPresenter implements HttpContract.ActionsListener, ISimpleHttpServiceServer {
 
-    private final IServerRequest repository;
+    private final IServerRequest request;
     private final HttpContract.View view;
 
-    public HttpPresenter(IServerRequest repository, HttpContract.View view) {
-        this.repository = repository;
+    public HttpPresenter(IServerRequest request, HttpContract.View view) {
+        this.request = request;
         this.view = view;
-        repository.setListener(this);
+        request.setListener(this);
     }
 
     @Override
     public void bootup() {
-        repository.bootup();
+        request.bootup();
     }
 
     @Override
     public void shutdown() {
-        repository.shutdown();
+        request.shutdown();
     }
 
     @Override
     public void info() {
-        repository.info();
+        request.info();
     }
 
     @Override
     public void connect() {
-        repository.connect();
+        request.connect();
     }
 
     @Override
     public void disconnect() {
-        repository.disconnect();
+        request.disconnect();
+    }
+
+    @Override
+    public void startService() {
+        request.startService();
+    }
+
+    @Override
+    public void stopService() {
+        request.stopService();
     }
 
     @Override
@@ -50,7 +60,7 @@ public class HttpPresenter implements HttpContract.ActionsListener, ISimpleHttpS
     @Override
     public void onBoundServiceConnectionChanged(boolean connected) {
         if (connected) {
-            repository.info();
+            request.info();
         }
     }
 }
