@@ -11,8 +11,6 @@ import android.widget.TextView;
 
 import com.peirr.http.mvp.HttpContract;
 import com.peirr.http.mvp.HttpPresenter;
-import com.peirr.http.mvp.HttpServer;
-import com.peirr.http.mvp.IServerRequest;
 import com.peirr.http.service.SimpleHttpInfo;
 import com.peirr.http.service.SimpleHttpService;
 
@@ -30,8 +28,7 @@ public class MainActivity extends AppCompatActivity implements HttpContract.View
         message = (TextView) findViewById(R.id.message);
         button = (Button) findViewById(R.id.button);
 
-        IServerRequest server = new HttpServer(this, SimpleHttpService.generatePort());
-        presenter = new HttpPresenter(server);
+        presenter = new HttpPresenter(Injection.provideHttpRequest(this));
 
         Switch plug = (Switch) findViewById(R.id.switch1);
         plug.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -48,9 +45,9 @@ public class MainActivity extends AppCompatActivity implements HttpContract.View
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                if(button.getText().equals("STOP")){
+                if (button.getText().equals("STOP")) {
                     presenter.stopService();
-                }else{
+                } else {
                     presenter.startService();
                 }
             }
