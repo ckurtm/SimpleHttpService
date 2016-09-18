@@ -3,7 +3,14 @@ apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
-version = "1.9"
+
+repositories {
+    maven {
+        url  "http://dl.bintray.com/ckurtm/maven"
+    }
+}
+
+version = "2.0"
 group = "com.peirr.http"
 
 def siteUrl = 'https://github.com/ckurtm/SimpleHttpService'
@@ -17,10 +24,10 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 24
-        versionCode 9
-        versionName "1.9"
+        versionCode 10
+        versionName "2.0"
     }
     buildTypes {
         release {
@@ -106,6 +113,7 @@ artifacts {
 
 
 dependencies {
+    compile 'com.peirr:presentation:1.0.0'
     compile 'com.squareup:javapoet:1.7.0'
     compile 'ckm.simple:remote-service-processor:1.0.3'
     compile 'ckm.simple:remote-service-annotation:1.0.3'
