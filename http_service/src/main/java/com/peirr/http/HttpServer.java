@@ -1,4 +1,4 @@
-package com.peirr.http.mvp;
+package com.peirr.http;
 
 import android.app.Activity;
 import android.content.Intent;

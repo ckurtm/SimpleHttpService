@@ -2,8 +2,8 @@ package com.peirra.http;
 
 import android.app.Activity;
 
-import com.peirr.http.mvp.HttpServer;
-import com.peirr.http.mvp.IServerRequest;
+import com.peirr.http.HttpServer;
+import com.peirr.http.IServerRequest;
 import com.peirr.http.service.SimpleHttpService;
 
 /**

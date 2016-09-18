@@ -9,8 +9,8 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import com.peirr.http.mvp.HttpContract;
-import com.peirr.http.mvp.HttpPresenter;
+import com.peirr.http.HttpContract;
+import com.peirr.http.HttpPresenter;
 import com.peirr.http.service.SimpleHttpInfo;
 import com.peirr.http.service.SimpleHttpService;
 

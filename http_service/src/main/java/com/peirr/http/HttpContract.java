@@ -1,4 +1,4 @@
-package com.peirr.http.mvp;
+package com.peirr.http;
 
 import com.peirr.presentation.MvpPresenter;
 import com.peirr.presentation.MvpView;
