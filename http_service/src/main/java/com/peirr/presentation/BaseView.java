@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.peirr.common;
+package com.peirr.presentation;
 
 public interface BaseView<T> {
 

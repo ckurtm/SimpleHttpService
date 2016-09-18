@@ -1,4 +1,4 @@
-package com.peirr.common;
+package com.peirr.presentation;
 
 
 public interface MvpPresenter<V extends MvpView> {

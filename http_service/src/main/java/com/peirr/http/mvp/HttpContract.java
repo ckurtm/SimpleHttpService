@@ -1,7 +1,7 @@
 package com.peirr.http.mvp;
 
-import com.peirr.common.MvpPresenter;
-import com.peirr.common.MvpView;
+import com.peirr.presentation.MvpPresenter;
+import com.peirr.presentation.MvpView;
 import com.peirr.http.service.SimpleHttpInfo;
 
 /**

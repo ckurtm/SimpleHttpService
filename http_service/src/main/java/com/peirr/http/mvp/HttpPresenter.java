@@ -1,6 +1,6 @@
 package com.peirr.http.mvp;
 
-import com.peirr.common.BasePresenter;
+import com.peirr.presentation.BasePresenter;
 import com.peirr.http.service.ISimpleHttpServiceServer;
 import com.peirr.http.service.SimpleHttpInfo;
 
